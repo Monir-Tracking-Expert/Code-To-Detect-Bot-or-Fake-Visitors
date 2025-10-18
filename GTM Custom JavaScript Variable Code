@@ -1,0 +1,72 @@
+function() {
+    var userAgent = navigator.userAgent.toLowerCase();
+
+    // 1. USER AGENT CHECKS
+    var isBot = /bot|crawler|spider|headless|phantom|selenium|puppeteer|postman|curl|wget|scraper|spammer|fake|automated|click|fetch|api|monitoring|checker|scan/i.test(userAgent);
+
+    var botPatterns = [
+        'googlebot','bingbot','yandexbot','duckduckbot','facebookexternalhit',
+        'slurp','baidu','twitterbot','linkedinbot','pinterestbot','tiktokbot',
+        'claritybot','hotjar','piwik','bigquery','criteo','redditbot','adsbot',
+        'whatsapp','telegrambot','discordbot','uptimerobot','site24x7','pingdom'
+    ];
+    var isDefinitelyBot = botPatterns.some(function(pattern) {
+        return userAgent.includes(pattern);
+    });
+
+    // 2. HEADLESS / WEBDRIVER CHECKS
+    var isHeadless =
+        (navigator.webdriver === true) ||
+        !("onscroll" in window) ||
+        (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 2) ||
+        (typeof navigator.plugins === "undefined" || navigator.plugins.length === 0);
+
+    // 3. SCREEN / RESOLUTION CHECKS
+    var screenWidth = window.screen.width;
+    var screenHeight = window.screen.height;
+    var isFakeScreen =
+        (screenWidth === 0 && screenHeight === 0) ||
+        (screenWidth > 10000 || screenHeight > 10000);
+
+    // 4. SPAM REFERRER CHECKS
+    var referrer = document.referrer.toLowerCase();
+    var spamReferrers = [
+        'semalt.com','buttons-for-website.com','free-share-buttons.com',
+        'socialseet.ru','get-free-traffic.xyz','floating-share-buttons.com','leadsgo.io'
+    ];
+    var isSpamReferrer = spamReferrers.some(function(domain) {
+        return referrer.includes(domain);
+    });
+
+    // 5. SUSPICIOUS UTM CHECKS
+    var urlParams = new URLSearchParams(window.location.search);
+    var utmSource = (urlParams.get('utm_source') || '').toLowerCase();
+    var utmMedium = (urlParams.get('utm_medium') || '').toLowerCase();
+    var spamUtmPatterns = [
+        'semalt','free-traffic','socialseet','get-free-traffic',
+        'traffic2money','seo-','rank-','viral-','leadsgo.io'
+    ];
+    var isSpamUtm = spamUtmPatterns.some(function(pattern) {
+        return utmSource.includes(pattern) || utmMedium.includes(pattern);
+    });
+
+    // 6. LANGUAGE / TIMEZONE CHECKS
+    var language = navigator.language || navigator.userLanguage || '';
+    var timezoneOffset = new Date().getTimezoneOffset();
+    var isSuspiciousLocale = (language === '') || (timezoneOffset % 60 !== 0);
+
+    // 7. BATTERY API CHECK
+    var isNoBattery = !(navigator.getBattery || navigator.battery);
+
+    // FINAL DECISION
+    return (
+        isBot ||
+        isDefinitelyBot ||
+        isHeadless ||
+        isFakeScreen ||
+        isSpamReferrer ||
+        isSpamUtm ||
+        isSuspiciousLocale ||
+        isNoBattery
+    );
+}

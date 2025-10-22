@@ -1,4 +1,5 @@
-How to Use This in GTM
+**How to Use This in GTM**
+
 1. Create the Variable
 - Variable Type: Custom JavaScript
 - Variable Name: JS - Is Bot Traffic
